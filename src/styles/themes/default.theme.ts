@@ -1,3 +1,5 @@
+import { colors } from '@material-ui/core'
+
 import { Theme } from '@/styles'
 
 const breakpoints = Object.freeze({
@@ -10,17 +12,14 @@ const breakpoints = Object.freeze({
 const extractBreakpointValue = (breakpoint: number) => `${breakpoint}px`
 
 export const theme: Theme = Object.freeze({
-  // ToDo @Minozzzi change colors
   colors: {
-    primary: '#0B71B9',
-    secondary: '#038657',
+    primary: '#0D2C54',
+    secondary: '#7FB800',
     white: '#FFFFFF',
-    black: '#424242',
-    lightgray: '#8D8D8D',
-    gray: '#444545',
-    darkgray: '#202328',
+    black: '#000000',
     background: '#F7F7F7',
-    error: '#D51A52'
+    error: colors.red[400],
+    success: colors.green[400]
   },
   fontFamily: {
     primary:
