@@ -4,9 +4,6 @@ export interface Theme {
     secondary: string
     white: string
     black: string
-    lightgray: string
-    gray: string
-    darkgray: string
     background: string
     error: string
   }
