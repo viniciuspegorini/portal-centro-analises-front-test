@@ -18,7 +18,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <S.Button
-      buttonTheme={buttonTheme}
+      buttontheme={buttonTheme}
       variant={variant}
       startIcon={icon}
       size={sizeButton === 'medium' ? 'medium' : 'large'}

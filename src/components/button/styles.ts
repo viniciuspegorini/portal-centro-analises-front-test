@@ -4,7 +4,7 @@ import styled, { css } from 'styled-components'
 import { ButtonTheme } from './theme'
 
 type ButtonProps = {
-  buttonTheme: ButtonTheme
+  buttontheme: ButtonTheme
 }
 
 export const Button = styled(UIButton)<ButtonProps>`
@@ -12,15 +12,15 @@ export const Button = styled(UIButton)<ButtonProps>`
   font-weight: bold !important;
   width: 100%;
 
-  ${({ buttonTheme }) =>
-    buttonTheme.background &&
+  ${({ buttontheme }) =>
+    buttontheme.background &&
     css`
       button {
-        color: ${buttonTheme.color};
-        background: ${buttonTheme.background};
+        color: ${buttontheme.color};
+        background: ${buttontheme.background};
 
         &:hover {
-          background: ${buttonTheme.backgroundHover};
+          background: ${buttontheme.backgroundHover};
         }
       }
     `}
