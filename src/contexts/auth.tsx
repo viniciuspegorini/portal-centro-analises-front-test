@@ -6,11 +6,13 @@ import React, {
   useState
 } from 'react'
 
+import { AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
 import { useHistory, useLocalStorage } from '@/hooks'
-import { api } from '@/services/api'
+import { api } from '@/services/api/apiSingleton'
 import { LoginParams, LoginResponseProps, login } from '@/services/api/auth'
+import { InvalidCredentialsError } from '@/services/api/errors'
 
 type AuthContextProps = {
   auth: LoginResponseProps | null
@@ -50,9 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setAuthData(loggedUser)
         navigateToSignedBasePath()
-      } catch {
-        // ToDo: improve error message according to API error
-        toast.error('Erro inesperado, tente novamente mais tarde')
+      } catch (error) {
+        if (error instanceof InvalidCredentialsError) {
+          toast.error(error.message)
+          return
+        }
+
+        const { message } = error as AxiosError
+        toast.error(message)
       } finally {
         setLoading(false)
       }
