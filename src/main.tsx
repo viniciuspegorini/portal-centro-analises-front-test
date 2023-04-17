@@ -1,6 +1,7 @@
 import React from 'react'
 
 import ReactDOM from 'react-dom/client'
+import { Toaster } from 'react-hot-toast'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <AuthProvider>
           <Router />
           <ResetStyle />
+          <Toaster position="top-right" reverseOrder={false} gutter={26} />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
