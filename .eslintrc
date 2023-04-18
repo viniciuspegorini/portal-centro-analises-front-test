@@ -6,7 +6,6 @@
   },
   "extends": [
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
     "airbnb",
     "airbnb-typescript",
     "plugin:@typescript-eslint/recommended",
@@ -30,8 +29,7 @@
     "prettier",
     "jsx-a11y",
     "react-hooks",
-    "vitest",
-    "sort-exports"
+    "vitest"
   ],
   "rules": {
     "prettier/prettier": "error",
@@ -40,7 +38,6 @@
     "react/require-default-props": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
-    "sort-exports/sort-exports": ["error", {"sortDir": "asc"}],
     "react/function-component-definition": [
       2,
       { "namedComponents": "arrow-function" }

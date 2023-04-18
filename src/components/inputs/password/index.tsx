@@ -5,6 +5,8 @@ import { VisibilityOutlined, VisibilityOffOutlined } from '@material-ui/icons'
 
 import { TextField, TextFieldProps } from '@/components'
 
+export type PasswordInputProps = TextFieldProps
+
 export const PasswordInput: React.FC<PasswordInputProps> = (props) => {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -21,14 +23,10 @@ export const PasswordInput: React.FC<PasswordInputProps> = (props) => {
   return (
     <TextField
       {...props}
-      materialInputProps={{
-        inputProps: {
-          type: showPassword ? 'text' : 'password'
-        }
+      inputElementProps={{
+        type: showPassword ? 'text' : 'password'
       }}
       icon={icon}
     />
   )
 }
-
-export type PasswordInputProps = TextFieldProps

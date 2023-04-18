@@ -3,25 +3,39 @@ import styled, { css } from 'styled-components'
 
 import { ButtonTheme } from './theme'
 
+type ContainerProps = {
+  buttonTheme: ButtonTheme
+}
+
+export const Container = styled.section<ContainerProps>`
+  display: flex;
+  justify-content: center;
+
+  ${({ buttonTheme }) =>
+    buttonTheme.background &&
+    css`
+      button {
+        color: ${buttonTheme.color};
+        background: ${buttonTheme.background};
+
+        &:hover {
+          background: ${buttonTheme.backgroundHover};
+        }
+      }
+    `}
+`
+
 type ButtonProps = {
-  buttontheme: ButtonTheme
+  fullWidth?: boolean
 }
 
 export const Button = styled(UIButton)<ButtonProps>`
   text-transform: inherit !important;
   font-weight: bold !important;
-  width: 100%;
 
-  ${({ buttontheme }) =>
-    buttontheme.background &&
+  ${({ fullWidth }) =>
+    fullWidth &&
     css`
-      button {
-        color: ${buttontheme.color};
-        background: ${buttontheme.background};
-
-        &:hover {
-          background: ${buttontheme.backgroundHover};
-        }
-      }
+      width: 100%;
     `}
 `
