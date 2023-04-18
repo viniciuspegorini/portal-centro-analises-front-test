@@ -1,16 +1,24 @@
 import React from 'react'
 
 import ReactDOM from 'react-dom/client'
+import { Toaster } from 'react-hot-toast'
+import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
-import { App } from '@/App'
+import { AuthProvider } from './contexts'
+import { Router } from './routes'
 import { ResetStyle, theme } from '@/styles'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <ThemeProvider theme={theme}>
-    <React.StrictMode>
-      <App />
-      <ResetStyle />
-    </React.StrictMode>
-  </ThemeProvider>
+  <React.StrictMode>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <AuthProvider>
+          <Router />
+          <ResetStyle />
+          <Toaster position="top-right" reverseOrder={false} gutter={26} />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 )
