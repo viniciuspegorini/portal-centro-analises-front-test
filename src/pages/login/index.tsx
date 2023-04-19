@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
             label="E-mail"
             placeholder="Digite seu e-mail"
             value={formData.email}
-            onChangeValue={handleChange('email')}
+            onChange={handleChange('email')}
             disabled={loading}
           />
 
@@ -32,7 +32,7 @@ export const LoginPage: React.FC = () => {
             label="Senha"
             placeholder="Digite sua senha"
             value={formData.password}
-            onChangeValue={handleChange('password')}
+            onChange={handleChange('password')}
             disabled={loading}
           />
         </>

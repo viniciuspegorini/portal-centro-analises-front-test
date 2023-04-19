@@ -20,8 +20,16 @@ export const TextField: React.FC<TextFieldProps> = (props) => {
     labelType = 'inside'
   } = props
 
-  const { isFocused, isDisabled, isLoading, onFocus, onBlur, onChange } =
-    useTextField(props)
+  const {
+    inputError,
+    inputTouched,
+    isFocused,
+    isDisabled,
+    isLoading,
+    handleOnFocus,
+    handleOnBlur,
+    handleOnChange
+  } = useTextField(props)
 
   return (
     <S.Container>
@@ -52,15 +60,17 @@ export const TextField: React.FC<TextFieldProps> = (props) => {
           ),
           endAdornment: (
             <InputAdornment position="end">
+              {inputTouched && !isLoading && !inputError && <S.ValidIcon />}
+              {inputTouched && !isLoading && inputError && <S.InvalidIcon />}
               {isLoading && <Loading />}
               {iconPosition === 'end' && icon}
               {materialInputProps.endAdornment}
             </InputAdornment>
           )
         }}
-        onChange={onChange}
-        onFocus={onFocus}
-        onBlur={onBlur}
+        onChange={handleOnChange}
+        onFocus={handleOnFocus}
+        onBlur={handleOnBlur}
       />
     </S.Container>
   )
