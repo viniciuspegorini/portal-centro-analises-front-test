@@ -3,7 +3,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { TextFieldProps } from './types'
 
 export const useTextField = (props: TextFieldProps) => {
-  const { error = '', touched, loading, disabled, onChange, validator } = props
+  const {
+    value,
+    error = '',
+    touched,
+    loading,
+    disabled,
+    onChange,
+    validator
+  } = props
 
   const [inputError, setInputError] = useState<string>(error)
   const [isFocused, setIsFocused] = useState(false)
@@ -19,42 +27,45 @@ export const useTextField = (props: TextFieldProps) => {
   const handleOnChange = useCallback<
     React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>
   >(
-    ({ target: { value } }) => {
+    (event) => {
       setInputTouched(true)
       handleCheckErrors()
-      onChange(value)
+      onChange(event.target.value)
     },
     [handleCheckErrors, onChange]
   )
 
-  const handleOnFocus = () => {
+  const handleOnFocus = useCallback(() => {
     setIsFocused(true)
-  }
+  }, [])
 
-  const handleOnBlur = () => {
+  const handleOnBlur = useCallback(() => {
+    setInputTouched(true)
     setIsFocused(false)
-  }
+    handleCheckErrors()
+  }, [handleCheckErrors])
+
+  useEffect(() => {
+    handleCheckErrors()
+  }, [value, handleCheckErrors])
 
   useEffect(() => {
     if (loading !== undefined) {
       if (isLoading !== loading) setLoading(loading)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading])
+  }, [isLoading, loading])
 
   useEffect(() => {
     if (touched !== undefined) {
       if (inputTouched !== touched) setInputTouched(touched)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [touched])
+  }, [inputTouched, touched])
 
   useEffect(() => {
     if (disabled !== undefined) {
       if (isDisabled !== disabled) setDisabled(disabled)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabled])
+  }, [disabled, isDisabled])
 
   return {
     inputError,

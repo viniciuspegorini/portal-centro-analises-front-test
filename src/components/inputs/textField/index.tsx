@@ -44,6 +44,8 @@ export const TextField: React.FC<TextFieldProps> = (props) => {
         autoCorrect="off"
         spellCheck={false}
         variant="outlined"
+        error={inputTouched && !isLoading && !!inputError}
+        helperText={inputTouched && !isLoading && inputError}
         focused={isFocused}
         fullWidth
         InputProps={{
