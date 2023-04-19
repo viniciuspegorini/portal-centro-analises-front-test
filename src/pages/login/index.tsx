@@ -7,8 +7,14 @@ import { LoginParams } from '@/services/api/auth'
 import { AuthContainerTemplate } from '@/templates/containers/auth'
 
 export const LoginPage: React.FC = () => {
-  const { loading, formData, setFormData, goToSignUp, handleSubmit } =
-    useLoginPage()
+  const {
+    loading,
+    formData,
+    setFormData,
+    goToSignUp,
+    handleSubmit,
+    handleValidate
+  } = useLoginPage()
   const { handleChange } = useHandleChangeFormData<LoginParams>({
     formData,
     setFormData
@@ -26,6 +32,7 @@ export const LoginPage: React.FC = () => {
             value={formData.email}
             onChange={handleChange('email')}
             disabled={loading}
+            validator={handleValidate('email')}
           />
 
           <PasswordInput
@@ -34,6 +41,7 @@ export const LoginPage: React.FC = () => {
             value={formData.password}
             onChange={handleChange('password')}
             disabled={loading}
+            validator={handleValidate('password')}
           />
         </>
       }
