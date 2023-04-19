@@ -6,9 +6,6 @@ type ModelKeys = keyof LoginParams
 
 export const loginValidation = (): ValidationComposite =>
   ValidationComposite.build([
-    ...ValidationBuilder.field<ModelKeys>('email').required().email().build(),
-    ...ValidationBuilder.field<ModelKeys>('password')
-      .required()
-      .password()
-      .build()
+    ...ValidationBuilder.field<ModelKeys>('email').required().build(),
+    ...ValidationBuilder.field<ModelKeys>('password').required().build()
   ])
