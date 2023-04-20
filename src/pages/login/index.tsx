@@ -8,6 +8,7 @@ import { AuthContainerTemplate } from '@/templates/containers/auth'
 
 export const LoginPage: React.FC = () => {
   const {
+    touched,
     loading,
     formData,
     setFormData,
@@ -32,6 +33,7 @@ export const LoginPage: React.FC = () => {
             value={formData.email}
             onChange={handleChange('email')}
             disabled={loading}
+            touched={touched}
             validator={handleValidate('email')}
           />
 
@@ -41,6 +43,7 @@ export const LoginPage: React.FC = () => {
             value={formData.password}
             onChange={handleChange('password')}
             disabled={loading}
+            touched={touched}
             validator={handleValidate('password')}
           />
         </>
