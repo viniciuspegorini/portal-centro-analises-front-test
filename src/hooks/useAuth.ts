@@ -7,16 +7,17 @@ export function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthenticatedUser>();
   const [loading, setLoading] = useState(true);
-  const [verifyAuthentication, setVerifyAuthentication] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
 
-    if (token) {
+    if (token && user) {
       api.defaults.headers.common["Authorization"] = `Bearer ${JSON.parse(
         token
       )}`;      
       setAuthenticated(true);
+      setAuthenticatedUser(JSON.parse(user));
     }
 
     setLoading(false);
@@ -36,37 +37,16 @@ export function useAuth() {
         "Authorization"
       ] = `Bearer ${response.token}`;
       setAuthenticatedUser(response.user);
-      console.log(authenticatedUser)
       setAuthenticated(true);
   }
-
-  function handleVerifyAuthentication() {
-    if (authenticated && authenticatedUser) {
-      setVerifyAuthentication(true)
-      // return true;
-    } else {
-      var token = localStorage.getItem("token");
-      var user  = localStorage.getItem("user");
-      console.log("aa" + token)
-      if (user !== null) {
-        const obj = JSON.parse(user);
-        setAuthenticatedUser(obj);
-        console.log(obj)
-        setAuthenticated(true);
-        setVerifyAuthentication(true)
-        // return true;
-      }
-    }
-  }
-
 
   return {
     authenticated,
     authenticatedUser,
     loading,
+    setAuthenticated, 
+    setAuthenticatedUser,
     handleLogin,
     handleLogout,
-    handleVerifyAuthentication,
-    verifyAuthentication
   };
 }
