@@ -7,7 +7,8 @@ import { SolicitarPage } from "./pages/solicitar";
 import { RequireAuth } from "./components/required-auth";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "./contexts";
-import { EmailConfirmationPage, SignUpPage, ProfilePage, AdminPage } from "./pages";
+import { EmailConfirmationPage, SignUpPage, ProfilePage, AdminPage, PartnerListPage, PartnerPage } from "./pages";
+import { NotFound } from "./pages/notFound";
 import { Project } from "./pages/projetc";
 import { ProjectPageForm } from "./pages/projetc/ProjectPageForm";
 import { EquipmentsPage } from "./pages/equipment/EquipmentPage";
@@ -93,7 +94,11 @@ export function App() {
           <Route path="/equipamento/form" element={<EquipmentPageForm />} />
           <Route path="/equipamento/form/:id" element={<EquipmentPageForm />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/partner" element={<PartnerListPage />} />
+          <Route path="/partner/new" element={<PartnerPage />} />
+          <Route path="/partner/:id" element={<PartnerPage />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
