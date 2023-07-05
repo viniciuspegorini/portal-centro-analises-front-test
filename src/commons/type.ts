@@ -65,11 +65,16 @@ export interface SolicitationAudit {
   id: number;
   changeDate: string;
   newStatus: string;
+  dropdown: boolean;
   solicitation: {
+    changeDate: string;
+    solicitation: any;
+    id: number;
+    newStatus: string;
     createdBy: {
       name: string;
     }
-    equipament: {
+    equipment: {
       form: string;
       name: string;
     };
@@ -80,6 +85,8 @@ export interface SolicitationAudit {
         name: string;
       }
     }
+    value: number;
+    fileUrl: string;
 
   }
 }
