@@ -7,31 +7,58 @@ import { CustomButton } from "../custom-button";
 import { api } from "@/libs/axiosBase";
 import { EditFinance, EditUser, User } from "@/commons/type";
 import DropdownMov from "../dropdownmov";
+import { useSubmit } from 'react-router-dom';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Paper, TableFooter, TablePagination, TableSortLabel } from '@mui/material';
+
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+
+import { StyledTableCell } from '@/layouts/StyldeTableCell'
+import { StyledTableRow } from '@/layouts/StyledTableRow'
+import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions'
+import UserService from '@/services/api/user/UserService';
+import FinanceService from '@/services/api/finance/financeservice';
 
 export const FinancePanel: React.FC = () => {
   const [activePage, setActivePage] = useState(0);
+  const [open, setOpen] = useState(false);
 
   const [user, setUser] = useState<User>();
   const [finance, setFinance] = useState<EditFinance>();
 
-  const [page, setPage] = useState<any>({
-    content: [],
-    first: true,
-    last: true,
-    number: 0,
-    totalElements: 0,
-    totalPages: 0,
-  });
+  const [data, setData] = useState([])
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(0);
+
+  const [orderBy, setOrderBy] = useState("id");
+  const [asc, setAsc] = useState(true);
+
+  const listHeader = [
+    { label: "Código", value: "id" },
+    { label: "Nome", value: "name" },
+    { label: "Tipo", value: "role" },
+    { label: "E-mail", value: "email" }
+  ];
 
   useEffect(() => {
-    api.get("/users/role/PROFESSOR").then((response) => {
-      const data = response.data;
-      setPage((state: any) => ({
-        ...state,
-        content: data,
-      }));
-    });
-  }, [activePage]);
+    loadData(0)
+  }, [orderBy, asc]);
+
+  const loadData = (page: number) => {
+    UserService.pageRole(page, rowsPerPage, orderBy, asc, 'PROFESSOR')
+      .then((response) => {
+        setData(response.data.content);
+        setTotal(response.data.totalElements);
+        setPages(response.data.totalPages);
+      })
+      .catch((responseError: any) => {
+      })
+  }
 
   const changePage = (index: number) => {
     setActivePage(index);
@@ -39,9 +66,26 @@ export const FinancePanel: React.FC = () => {
 
   function getUser(selected: User): void | undefined {
     setUser(selected);
+    handleClickOpen();
   }
 
-  const handleValue = (value: string) => {
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number,
+  ) => {
+    setPage(newPage);
+    loadData(newPage)
+  };
+
+  const handleValue = (value: any) => {
     let updatedFinance = { ...finance };
     updatedFinance.value = value;
   };
@@ -71,13 +115,8 @@ export const FinancePanel: React.FC = () => {
     nome: yup.string(),
   });
 
-  async function handleClickForm(values: {
-    nome: string;
-    type: string;
-    valor: string;
-    descricao: string;
-  }) {
-    const { nome, type, valor, descricao } = values;
+  const handleClickForm = (values: any) => {
+    const { nome, type, valor, description } = values;
 
     let updatedFinance = { ...finance };
     updatedFinance.user = {
@@ -88,30 +127,29 @@ export const FinancePanel: React.FC = () => {
       role: "",
     };
 
-    updatedFinance.description = descricao;
+    updatedFinance.type = type;
+    updatedFinance.description = description;
     updatedFinance.value = valor;
 
-    debugger;
-
-    if (
-      updatedFinance != null &&
-      updatedFinance.user != null &&
-      updatedFinance.type != null &&
-      updatedFinance.value != null
-    ) {
-      api
-        .post(`transaction`, {
-          value: updatedFinance.value,
-          user: {
-            id: updatedFinance.user.id,
-          },
-          type: updatedFinance.type,
-          description: updatedFinance.description,
-        })
-        .then((response) => {
-          window.location.reload();
-        });
+    if (updatedFinance && updatedFinance.user
+      && updatedFinance.type != null && updatedFinance.value) {
+      FinanceService.save({
+        "value": updatedFinance.value,
+        "user": {
+          "id": updatedFinance.user.id
+        },
+        "type": updatedFinance.type,
+        "description": updatedFinance.description
+      }).then((response) => {
+        handleClose();
+        handleChangePage(null, 0)
+      });
     }
+  }
+
+  const handleSort = (id: any) => {
+    setOrderBy(id);
+    setAsc(!asc);
   }
 
   return (
@@ -122,124 +160,137 @@ export const FinancePanel: React.FC = () => {
         <>
           <div className={styles.inputs_box}>
             <div className={styles.container}>
-              <h1 className={styles.title}>PAINEL FINANCEIRO</h1>
-              <div>
-                <Formik
-                  initialValues={{
-                    nome: "",
-                    type: "",
-                    valor: "",
-                    descricao: "",
-                  }}
-                  onSubmit={handleClickForm}
-                  validationSchema={validationForm}
-                >
-                  <Form className={styles.inputs_container}>
-                    <div className={styles.inputs_box}>
-                      <div className={styles.row_box}>
-                        <div className={styles.field_box}>
-                          <p>Nome</p>
-                          <div className={styles.input_box}>
-                            <ErrorMessage
-                              component={CustomErrorMessage}
-                              name="nome"
-                              className={styles.form_error}
-                            />
-                            <Field
-                              name="nome"
-                              disabled
-                              value={user?.displayName ?? ""}
-                              placeholder=""
-                              className={styles.input_form}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.row_box}>
-                        <div className={styles.field_box}>
+              <Dialog open={open} onClose={handleClose} style={{ overflowY: 'visible' }}>
+                <DialogTitle>Movimentação</DialogTitle>
+                <DialogContent style={{ overflowY: 'visible' }}>
+                  <Formik
+                    initialValues={{
+                      nome: "",
+                      type: 0,
+                      valor: "",
+                      description: "",
+                    }}
+                    onSubmit={handleClickForm}
+                    validationSchema={validationForm}
+                  >
+                    <Form className={styles.inputs_container}>
+                      <div className={styles.inputs_box}>
+                        <div className={styles.row_box}>
                           <div className={styles.field_box}>
-                            <p>Movimentação</p>
-                            <DropdownMov
-                              value={0}
-                              onChange={handleTypeChange}
-                            />
+                            <p>Nome</p>
+                            <div className={styles.input_box}>
+                              <ErrorMessage
+                                component={CustomErrorMessage}
+                                name="nome"
+                                className={styles.form_error} />
+                              <Field
+                                name="nome"
+                                disabled
+                                value={user?.displayName ?? ''}
+                                placeholder=''
+                                className={styles.input_form} />
+                            </div>
+                          </div>
+
+                          <div className={styles.field_box}>
+                            <div className={styles.field_box}>
+                              <p>Movimentação</p>
+                              <DropdownMov nome={"nome"} value={0} onChange={handleTypeChange} />
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.row_box}>
+                          <div className={styles.field_box}>
+                            <p>Valor</p>
+                            <div className={styles.input_box}>
+                              <ErrorMessage
+                                component={CustomErrorMessage}
+                                name="valor"
+                                className={styles.form_error} />
+                              <Field
+                                name="valor"
+                                placeholder=''
+                                className={styles.input_form} />
+                            </div>
+                          </div>
+
+                          <div className={styles.field_box}>
+                            <p>Descrição</p>
+                            <div className={styles.input_box}>
+                              <ErrorMessage
+                                component={CustomErrorMessage}
+                                name="description"
+                                className={styles.form_error} />
+                              <Field
+                                name="description"
+                                placeholder=''
+                                className={styles.input_form} />
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.row_box}>
+                          <div className={styles.button_box}>
+                            <CustomButton
+                              onClick={() => handleClose()}
+                              text="Cancelar"
+                              padding="1rem"
+                              textColor="white"
+                              backgroundColor="#676767"
+                              textColorHover="white"
+                              backgroundColorHover="#9f9f9f"
+                              letterSpacing="4px"
+                              fontSize="16px"
+                              fontWeight="400"
+                              type="submit" />
+                          </div>
+                          <div className={styles.button_box}>
+                            <CustomButton
+                              text="CONFIRMAR"
+                              padding="1rem"
+                              textColor="white"
+                              backgroundColor="#006dac"
+                              textColorHover="white"
+                              backgroundColorHover="#00bbff"
+                              letterSpacing="4px"
+                              fontSize="16px"
+                              fontWeight="400"
+                              type="submit" />
                           </div>
                         </div>
                       </div>
-                      <div className={styles.row_box}>
-                        <div className={styles.field_box}>
-                          <p>Valor</p>
-                          <div className={styles.input_box}>
-                            <ErrorMessage
-                              component={CustomErrorMessage}
-                              name="valor"
-                              className={styles.form_error}
-                            />
-                            <Field
-                              name="valor"
-                              placeholder=""
-                              className={styles.input_form}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.row_box}>
-                        <div className={styles.field_box}>
-                          <p>Descrição</p>
-                          <div className={styles.input_box}>
-                            <ErrorMessage
-                              component={CustomErrorMessage}
-                              name="description"
-                              className={styles.form_error}
-                            />
-                            <Field
-                              name="description"
-                              placeholder=""
-                              value={finance?.description}
-                              className={styles.input_form}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.button_box}>
-                        <CustomButton
-                          text="CONFIRMAR"
-                          padding="1rem"
-                          textColor="white"
-                          backgroundColor="#006dac"
-                          textColorHover="white"
-                          backgroundColorHover="#00bbff"
-                          letterSpacing="4px"
-                          fontSize="16px"
-                          fontWeight="400"
-                          type="submit"
-                        />
-                      </div>
-                    </div>
-                  </Form>
-                </Formik>
-              </div>
+                    </Form>
+                  </Formik>
+                </DialogContent>
+              </Dialog>
+              <h1 className={styles.title}>PAINEL FINANCEIRO</h1>
             </div>
           </div>
-          <div className="table-responsive">
-            <table className={styles.tableAdmin}>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th>Email</th>
-                  <th>Seleção</th>
-                </tr>
-              </thead>
-              <tbody>
-                {page.content?.map((user: any) => (
-                  <tr key={user.id}>
-                    <td>{user.id}</td>
-                    <td>{user.name}</td>
-                    <td>{user.role}</td>
-                    <td>{user.email}</td>
-                    <td>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 700 }} aria-label="customized table">
+              <TableHead>
+                <TableRow>
+                  {listHeader.map((head) => (
+                    <StyledTableCell align={head.value==="id" ?"left":"center"} key={head.value}>{head.label}
+                      <TableSortLabel active={orderBy === head.value}
+                        direction={asc ? 'asc' : 'desc'}
+                        onClick={() => handleSort(head.value)}
+                      >
+                      </TableSortLabel>
+                    </StyledTableCell>
+                  ))}
+                  <StyledTableCell align="center">Seleção</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.map((user: any) => (
+                  <StyledTableRow key={user.id}>
+                    <StyledTableCell scope="row">
+                      {user.id}
+                    </StyledTableCell>
+                    <StyledTableCell align="center">{user.name}</StyledTableCell>
+                    <StyledTableCell align="center">{user.role}</StyledTableCell>
+                    <StyledTableCell align="center">{user.email}</StyledTableCell>
+                    <StyledTableCell align="center">
                       <CustomButton
                         onClick={() => getUser(user)}
                         text="Selecionar"
@@ -251,14 +302,33 @@ export const FinancePanel: React.FC = () => {
                         letterSpacing="4px"
                         fontSize="12px"
                         fontWeight="200"
-                        type="button"
+                        type="submit"
                       />
-                    </td>
-                  </tr>
+                    </StyledTableCell>
+                  </StyledTableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    colSpan={5}
+                    count={total}
+                    rowsPerPage={rowsPerPage}
+                    rowsPerPageOptions={[10]}
+                    page={page}
+                    SelectProps={{
+                      inputProps: {
+                        'aria-label': 'rows per page',
+                      },
+                      native: true,
+                    }}
+                    onPageChange={handleChangePage}
+                    ActionsComponent={TablePaginationActions} />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
         </>
       )}
     </>

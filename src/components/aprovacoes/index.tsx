@@ -13,11 +13,12 @@ import styles from './styles.module.scss'
 import AprovacoesService from '@/services/api/aprovacoes/AprovacoesService'
 import { StyledTableCell } from '@/layouts/StyldeTableCell'
 import { StyledTableRow } from '@/layouts/StyledTableRow'
-import { ArovacoesParams, VinculoParams } from '@/services/api/aprovacoes/aprovacoes.type'
+import { AprovacoesParams, VinculoParams } from '@/services/api/aprovacoes/aprovacoes.type'
+import StudentProfessorLinkService from '@/services/api/studentProfessorLink/StudentProfessorLinkService'
 
 export const Aprovacoes = () => {
   const navigate = useNavigate()
-  const [dataSolicitation, setDataSolicitation] = useState<ArovacoesParams[]>([])
+  const [dataSolicitation, setDataSolicitation] = useState<AprovacoesParams[]>([])
   const [dataVinculo, setDataVinculo] = useState<VinculoParams[]>([])
   const [apiError, setApiError] = useState('')
   var t: any = localStorage.getItem("user");
@@ -33,19 +34,19 @@ export const Aprovacoes = () => {
       setApiError('')
     })
     .catch((responseError: any) => {
-      setApiError('Falha ao carregar lista de categorias.')
+      setApiError('Falha ao carregar lista de solicitações pendentes.')
       toast.error(apiError)
       // eslint-disable-next-line no-console
     })
 
-    AprovacoesService.getVinculoPending(userId)
+    StudentProfessorLinkService.getVinculoPending(userId)
     .then((response: any) => {
       setDataVinculo(response.data)
       console.log(response.data)
       setApiError('')
     })
     .catch((responseError: any) => {
-      setApiError('Falha ao carregar lista de categorias.')
+      setApiError('Falha ao carregar lista de vínculos pendentes.')
       toast.error(apiError)
       // eslint-disable-next-line no-console
     })
@@ -92,7 +93,7 @@ export const Aprovacoes = () => {
       teacher: teacher,
       aproved: true
     }
-    AprovacoesService.approveVinculo(payload)
+    StudentProfessorLinkService.approveVinculo(payload)
     .then((response) => {
       toast.success("Aprovado com sucesso!")
       setApiError('')
@@ -106,7 +107,7 @@ export const Aprovacoes = () => {
   }
 
   const rejectVinculo = (id: number)  => {    
-    AprovacoesService.rejectVinculo(id)
+    StudentProfessorLinkService.rejectVinculo(id)
     .then((response) => {
       toast.success("Rejeitado!")
       setApiError('')

@@ -1,5 +1,5 @@
 import { EditRounded, AddCircleOutlineRounded, RemoveCircleOutlineRounded } from "@material-ui/icons";
-import { Button, Grid, IconButton } from "@mui/material";
+import { Button, Grid, IconButton, TableFooter, TablePagination, TableSortLabel } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import styles from "./styles.module.scss";
 import Table from "@mui/material/Table";
@@ -15,34 +15,57 @@ import { StyledTableRow } from "@/layouts/StyledTableRow";
 import { EquipmentParams } from "@/services/api/equipment/equipment.type";
 import EquipmentService from "@/services/api/equipment/EquipmentService";
 import { Header, Menu } from "@/components";
+import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
 
 export const EquipmentsPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<EquipmentParams[]>([]);
+  const [apiError, setApiError] = useState('');
 
-  const loadData = async () => {
-    try {
-      const response = await EquipmentService.findAll();
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(0);
+  const [status, setStatus] = useState(true);
 
-      if (response.data) {
-        setData(response.data);
-      }
-    } catch (error) {
-      toast.error("Falha ao carregar lista de equipamentos");
-      console.log(error);
-    }
+  const [orderBy, setOrderBy] = useState("id");
+  const [asc, setAsc] = useState(true);
+
+  const listHeader = [
+    { label: "Código", value: "id" },
+    { label: "Nome", value: "name" },
+    { label: "Short name", value: "shortName"},
+    { label: "$/h UTFPR", value: "valueHourUtfpr" },
+    { label: "$/h Parceiro", value: "valueHourPartner" },
+    { label: "$/h Externo", value: "valueHourPfPj" },
+    { label: "$/amostra UTFPR", value: "valueSampleUtfpr" },
+    { label: "$/amostra Parceiro", value: "valueSamplePartner" },
+    { label: "$/amostra Externo", value: "valueSamplePfPj" }
+  ];
+
+  const loadData = (page: number) => {
+    EquipmentService.pageStatus(page, rowsPerPage, orderBy, asc, status)
+      .then((response) => {
+        setData(response.data.content);
+        setTotal(response.data.totalElements);
+        setPages(response.data.totalPages);
+        setApiError('')
+      }).catch((responseError: any) => {
+        toast.error("Falha ao carregar lista de equipamentos");
+        console.log(responseError);
+      })
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(0);
+  }, [status, orderBy, asc]);
 
   //modificar este para chamar o inativar equipamento
   const removeEquipment = (id: number) => {
     EquipmentService.remove(id)
       .then((response) => {
         toast.success("Inativado com sucesso");
-        loadData();
+        handleChangePage(null, 0)
       })
       .catch((responseError) => {
         toast.error("Falha ao deixar o equipamento inativo.");
@@ -50,29 +73,40 @@ export const EquipmentsPage = () => {
       });
   };
 
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number,
+  ) => {
+    setPage(newPage);
+    loadData(newPage)
+  };
+
   //carrega a lista de usuários inativos no front
-  function showInactive(){
-    EquipmentService.findAllInactive()
-    .then(response => {
-      setData(response.data);
-    }).catch((responseError) => {
-      toast.error("Falha ao carregar lista de equipamentos Inativos");
-      console.log(responseError);
-    });
+  function showInactive() {
+    setStatus(false);
+  }
+
+  function showActive() {
+    setStatus(true);
   }
 
   //chama a função que torna os equipamentos inativos em
   //ativos novamente
-  const activeSelectedUser = (id: number) => {
+  const activeSelectedEquipment = (id: number) => {
     EquipmentService.activeEquipmentById(id)
       .then((response) => {
         toast.success("Ativado com sucesso");
-        showInactive();
+        loadData(0);
       })
       .catch((responseError) => {
         toast.error("Falha ao deixar o equipamento ativo.");
         console.log(responseError);
       });
+  }
+
+  const handleSort = (id: any) => {
+    setOrderBy(id);
+    setAsc(!asc);
   }
 
   return (
@@ -92,11 +126,11 @@ export const EquipmentsPage = () => {
               Inserir
             </Button>
 
-            <Button color="secondary" onClick={() => showInactive()} variant="outlined" sx={{ m: 1}}>
+            <Button color="secondary" onClick={() => showInactive()} variant="outlined" sx={{ m: 1 }}>
               Inativos
             </Button>
 
-            <Button color="secondary" onClick={() => loadData()} variant="outlined" sx={{ m: 1}}>
+            <Button color="secondary" onClick={() => showActive()} variant="outlined" sx={{ m: 1 }}>
               Ativos
             </Button>
           </Grid>
@@ -104,51 +138,43 @@ export const EquipmentsPage = () => {
             <Table sx={{ minWidth: 700 }} aria-label="customized table">
               <TableHead>
                 <TableRow>
-                  <StyledTableCell>#</StyledTableCell>
-                  <StyledTableCell align="left">Nome</StyledTableCell>
-                  <StyledTableCell align="left">Short name</StyledTableCell>
-                  <StyledTableCell align="center">$/h UTFPR </StyledTableCell>
-                  <StyledTableCell align="center">
-                    $/h Parceiro{" "}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">$/h Externo </StyledTableCell>
-                  <StyledTableCell align="center">
-                    $/amostra UTFPR{" "}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">
-                    $/amostra Parceiro{" "}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">
-                    $/amostra Externo{" "}
-                  </StyledTableCell>
+                  {listHeader.map((head) => (
+                    <StyledTableCell key={head.value}>{head.label}
+                      <TableSortLabel active={orderBy === head.value}
+                        direction={asc ? 'asc' : 'desc'}
+                        onClick={() => handleSort(head.value)}
+                      >
+                      </TableSortLabel>
+                    </StyledTableCell>
+                  ))}
                   <StyledTableCell align="right" />
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.map((e) => (
                   <StyledTableRow key={e.id}>
-                    <StyledTableCell component="th" scope="row">
+                    <StyledTableCell scope="row">
                       {e.id}
                     </StyledTableCell>
                     <StyledTableCell align="left">{e.name}</StyledTableCell>
                     <StyledTableCell align="center">{e.shortName}</StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueHourUtfpr?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueHourUtfpr?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueHourPartner?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueHourPartner?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueHourPfPj?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueHourPfPj?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueSampleUtfpr?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueSampleUtfpr?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueSamplePartner?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueSamplePartner?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
                     <StyledTableCell align="center">
-                      {e.valueSamplePfPj?.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}
+                      {e.valueSamplePfPj?.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                     </StyledTableCell>
 
                     <StyledTableCell
@@ -163,7 +189,7 @@ export const EquipmentsPage = () => {
                       </IconButton>
 
                       <IconButton aria-label="deixar ativo" color="success">
-                        <AddCircleOutlineRounded onClick={() => activeSelectedUser(e.id!)} />
+                        <AddCircleOutlineRounded onClick={() => activeSelectedEquipment(e.id!)} />
                       </IconButton>
 
                       <IconButton aria-label="deixar inativo" color="error">
@@ -173,6 +199,25 @@ export const EquipmentsPage = () => {
                   </StyledTableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    colSpan={4}
+                    count={total}
+                    rowsPerPage={rowsPerPage}
+                    rowsPerPageOptions={[10]}
+                    page={page}
+                    SelectProps={{
+                      inputProps: {
+                        'aria-label': 'rows per page',
+                      },
+                      native: true,
+                    }}
+                    onPageChange={handleChangePage}
+                    ActionsComponent={TablePaginationActions} />
+                </TableRow>
+              </TableFooter>
             </Table>
           </TableContainer>
           {data.length === 0 && (
