@@ -3,7 +3,7 @@ import axios from 'axios'
 import { env } from '@/config'
 
 export const api = axios.create({
-  baseURL: env.API_BASE_URL,
+  baseURL: env.API_BASE_URL || 'https://ca-api-dev.app.pb.utfpr.edu.br/api',
   headers: {
     'Content-Type': 'application/json'
   },
